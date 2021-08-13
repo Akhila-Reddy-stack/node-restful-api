@@ -12,8 +12,10 @@ class Users {
         if (users?.length == 0) {
           res.json({ status: 404, message: "Users Not Found!", data: users });
         }
-        else if (users?.length > 0)
+        else if (users?.length > 0) {
           res.json({ status: 200, data: users });
+        }
+
       })
     }
     catch (error) {
@@ -37,7 +39,7 @@ class Users {
       })
     }
     catch (error) {
-      res.json({ status: false, message: error });
+      res.json({ status: false, message: "Failed!" });
     }
   }
 
@@ -87,16 +89,43 @@ class Users {
           deleted_at: null,
           user_status: data.user_status
         };
-        Models.Facilities.findOne({
+
+        Models.Facility.findOne({
           where: { facility_id: data.facility_id },
         }).then((facilities) => {
+
           if (facilities == null) {
             const error = 'Facility Id not found!';
             res.json({ status: 400, message: error });
           }
+
           if (facilities != null) {
-            Models.Users.create(dataForUser).then((user) => {
-              res.json({ status: 200, message: "User Added Successfully!" });
+            Models.Users.findOne({
+              where: { user_email: data.user_email },
+            }).then((useremailExists) => {
+
+              if (useremailExists || useremailExists == !null) {
+                res.json({ status: 403, message: "User Email already Exists!" });
+              }
+
+              if (useremailExists == null ||
+                useremailExists == undefined) {
+
+                Models.Users.findOne({
+                  where: { username: data.username },
+                }).then((username) => {
+
+                  if (username || username == !null) {
+                    res.json({ status: 403, message: "User Name already Exists!" });
+                  }
+                  if (username == null || username == undefined) {
+
+                    Models.Users.create(dataForUser).then((user) => {
+                      res.json({ status: 200, message: "User Added Successfully!" });
+                    })
+                  }
+                })
+              }
             })
           }
         }
@@ -124,7 +153,9 @@ class Users {
       if (data.user_id != undefined ||
         data.user_id != null ||
         data.user_id != "") {
+        //Password Comparison
         const passwordhash = bcrypt.hashSync(data.password, 6)
+
         let dataForUser = {
           facility_id: data.facility_id,
           user_email: data.user_email,
@@ -134,15 +165,40 @@ class Users {
           updated_at: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           user_status: data.user_status
         };
-        let userUpdated = await Models.Users.update(dataForUser, { where: { user_id: data.user_id } });
-        if (userUpdated.indexOf(0) == -1) {
-          res.json({ status: 200, message: "User Updated Successfully!" });
-        }
-        if (userUpdated.indexOf(0) == 0) {
-          res.json({ status: 404, message: "Update Failed!" });
-        }
-      }
 
+        Models.Users.findAll().then((useremailExists) => {
+
+          if (useremailExists != null) {
+            useremailExists?.map(user => {
+
+              if (user.user_id != data.user_id) {
+                let userdata = user;
+
+                if (userdata.user_email == data.user_email) {
+                  res.json({ status: 403, message: "User Email already Exists!" });
+                }
+                if (userdata.username == data.username) {
+                  res.json({ status: 403, message: "User Name already Exists!" });
+                }
+                if (userdata.user_email != data.user_email && userdata.username != data.username) {
+                  Models.Users.update(dataForUser, { where: { user_id: data.user_id } }).then((userUpdated) => {
+                    if (userUpdated.indexOf(0) == -1) {
+                      res.json({ status: 200, message: "User Updated Successfully!" });
+                    }
+
+                    if (userUpdated.indexOf(0) == 0) {
+                      res.json({ status: 404, message: "Update Failed!" });
+                    }
+                  }
+                  );
+                }
+              }
+            })
+          }
+
+        })
+
+      }
     }
     catch (error) {
       res.json({ status: false, message: "Failed!" });

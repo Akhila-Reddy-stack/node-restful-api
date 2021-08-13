@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  const Facility = sequelize.define(
+  const Users = sequelize.define(
     "Users",
     {
       user_id: {
@@ -56,6 +56,12 @@ module.exports = (sequelize, DataTypes) => {
       collate: "utf8mb4_bin",
     }
   );
-  return Facility;
+  Users.associate = function (models) {
+    // associations can be defined here
+    models.Users.belongsTo(models.Facility, {
+      foreignKey: "facility_id",
+    });
+  };
+  return Users;
 };
 

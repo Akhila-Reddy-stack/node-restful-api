@@ -29,7 +29,7 @@ module.exports = {
         defaultValue: 1,
         comment: "1: Active; 0: Inactive",
       },
-    });
+    })
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('facilities');

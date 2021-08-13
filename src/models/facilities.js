@@ -2,7 +2,7 @@
 
 module.exports = (sequelize, DataTypes) => {
   const Facility = sequelize.define(
-    "Facilities",
+    "Facility",
     {
       facility_id: {
         type: DataTypes.BIGINT(20),
@@ -39,5 +39,11 @@ module.exports = (sequelize, DataTypes) => {
       collate: "utf8mb4_bin",
     }
   );
+  Facility.associate = function (models) {
+    // associations can be defined here
+    models.Facility.hasMany(models.Users, {
+      foreignKey: "facility_id",
+    });
+  };
   return Facility;
 };

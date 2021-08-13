@@ -9,7 +9,13 @@ module.exports = {
       },
       facility_id: {
         type: Sequelize.BIGINT(20),
-        allowNull: true
+        allowNull: true,
+        references: {
+          model: 'facilities',
+          key: 'facility_id'
+        },
+        onUpdate: 'cascade',
+        onDelete: 'cascade'
       },
       user_email: {
         type: Sequelize.STRING,
@@ -48,8 +54,8 @@ module.exports = {
         allowNull: false,
         comment: "1: Active; 0: Inactive",
       },
-
     });
+
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('users');
